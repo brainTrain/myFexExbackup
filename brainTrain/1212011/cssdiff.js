@@ -4,69 +4,100 @@ $(document).ready( function() {
     var objectClass = '';
     var inputKey = '';
     var cssStyles = '';
+    var cssDiffNotes = '';
+    var cssDiffGroup = '';
+    var inputTest = '';
+    var timerOptions = '';
+    var timerOptionsMinutes = '';
+    var timerOptionsMinutes = '';
+    // timerStep and timerMax are in seconds
+    var timerStep = 30;
+    var timerMax = 300;
+
+    //todo: convert minutes/seconds to something human readable
+    for(i=timerStep; i <= timerMax; i += timerStep) {
+        if(i==timerStep) {
+            timerOptions += '<option value=' + timerStep + '>' + timerStep + ' seconds</option>';
+        } else {
+            timerOptionsMinutes = (i / (timerStep * 2));
+            timerOptionsSeconds = 60 % (i / (timerStep * 2));
+                if(timerOptionsSeconds == 0) {
+                    timerOptionsSeconds = '00';
+                }
+            timerOptions += '<option value=' + i + '>' +  timerOptionsMinutes + ':' + timerOptionsSeconds + ' minutes</option>';
+        }
+
+    }
+    $('.verbosity_container').append(timerOptions);
 
         cssStyles = 'background-color,width,height,color';
-
         
+    $('.cssdiff_contianer').draggable();
+
+    $('.cssdiff_inputprompt').click( function() {
+        var inputKey = prompt('Enter your Loggly Input Key, bro!');
+        inputTest = (inputKey != null && inputKey != '');
+        if(inputTest) {
+            console.log('sending inputting', inputKey);
+            cssDiffNotes = $('.cssdiff_notes').val();
+            cssDiffGroup = $('.cssdiff_group').val();
+            testAjaxURL = 'https://logs.loggly.com/inputs/' + inputKey;
 
 
-    var inputKey = prompt('Enter your Loggly Input Key, bro!');
-    if(inputKey !== null) {
-        testAjaxURL = 'https://logs.loggly.com/inputs/' + inputKey;
+            $('*').watch(cssStyles, function(watchData, index) {
+                var htmlObject = this;
+                var htmlObjectParent = this.parentNode;
+                var cssValue = watchData.vals[index];
+                var cssProperty = watchData.props[index];
+                var htmlTag = htmlObject.localName;
+                var parentHtmlTag = htmlObjectParent.parentNode.localName;
+                
+                objectAttrs = '';
+                parentObjectAttrs = '';
+                //grabs all attributes of the object (so's you know which one it is) 
+                for(i=0; i < htmlObject.attributes.length; i++) {
+                    if(i==0) {
+                        objectAttrs += htmlObject.attributes[i].nodeName + ' : ' + htmlObject.attributes[i].nodeValue;
+                    } else {
+                        objectAttrs += ', ' + htmlObject.attributes[i].nodeName + ' : ' + htmlObject.attributes[i].nodeValue;
 
-
-        $('*').watch(cssStyles, function(watchData, index) {
-            var htmlObject = this;
-            var htmlObjectParent = this.parentNode;
-            var cssValue = watchData.vals[index];
-            var cssProperty = watchData.props[index];
-            var htmlTag = htmlObject.localName;
-            var parentHtmlTag = htmlObjectParent.parentNode.localName;
-            
-            objectAttrs = '';
-            parentObjectAttrs = '';
-            //grabs all attributes of the object (so's you know which one it is) 
-            for(i=0; i < htmlObject.attributes.length; i++) {
-                if(i==0) {
-                    objectAttrs += htmlObject.attributes[i].nodeName + ' : ' + htmlObject.attributes[i].nodeValue;
-                } else {
-                    objectAttrs += ', ' + htmlObject.attributes[i].nodeName + ' : ' + htmlObject.attributes[i].nodeValue;
+                    }
 
                 }
-
-            }
-            //if the html object has no attributes (it's an a or p tag, for example) find the attributes of its parent
-            //thought is this will be needed for CSS selectors such as .some_class a { //blahblah  }
-            if(htmlObject.attributes.length) {
-                for(i=0; i < htmlObjectParent.attributes.length; i++) {
-                    if(i==0) {
-                        parentObjectAttrs += htmlObjectParent.attributes[i].nodeName + ' : ' + htmlObjectParent.attributes[i].nodeValue;
-                    } else {
-                        parentObjectAttrs += ', ' + htmlObjectParent.attributes[i].nodeName + ' : ' + htmlObjectParent.attributes[i].nodeValue;
+                //if the html object has no attributes (it's an a or p tag, for example) find the attributes of its parent
+                //thought is this will be needed for CSS selectors such as .some_class a { //blahblah  }
+                if(htmlObject.attributes.length) {
+                    for(i=0; i < htmlObjectParent.attributes.length; i++) {
+                        if(i==0) {
+                            parentObjectAttrs += htmlObjectParent.attributes[i].nodeName + ' : ' + htmlObjectParent.attributes[i].nodeValue;
+                        } else {
+                            parentObjectAttrs += ', ' + htmlObjectParent.attributes[i].nodeName + ' : ' + htmlObjectParent.attributes[i].nodeValue;
+                        }
                     }
                 }
-            }
-           
-            jsonObject = {'htmlTag': htmlTag, 'objectAttrs': objectAttrs,};
-            jsonParentObject = {'parentHtmlTag': parentHtmlTag, 'parentObjectAttrs': parentObjectAttrs};
-            logglyJson = {};
-            logglyJson = {'cssProperty': cssProperty, 'cssValue': cssValue, 'cssObject': jsonObject, 'cssParentObject': parentObjectAttrs }
-                $.ajax ({
-                    type: 'POST',
-                    url: testAjaxURL,
-                    data: logglyJson,
-                    success: function(query) {
-                    },  
-                    error: function(jqXHR, txtStatus, error) {
-                        alert('hmmm something weird happened... you sure your input key is correct?');
+               
+                //if( ){ }
+                jsonObject = 'htmlTag: ' + htmlTag + ' objectAttrs: ' + objectAttrs;
+                jsonParentObject = 'parentHtmlTag: ' + parentHtmlTag + ' parentObjectAttrs: ' + parentObjectAttrs;
+                logglyJson = {};
+                logglyJson = {'Group': cssDiffGroup, 'Notes': cssDiffNotes, 'cssProperty': cssProperty, 'cssValue': cssValue, 'cssObject': jsonObject, 'cssParentObject': parentObjectAttrs }
+                    $.ajax ({
+                        type: 'POST',
+                        url: testAjaxURL,
+                        data: logglyJson,
+                        success: function(query) {
+                        },  
+                        error: function(jqXHR, txtStatus, error) {
+                            alert('hmmm something weird happened... you sure your input key is correct?');
 
-                    }   
-                });
-            
-            console.log('json ', logglyJson);
-        });
-    }
+                        }   
+                    });
+                
+                console.log('json ', logglyJson);
+            });
+        }
 
+    });
 });
 
 

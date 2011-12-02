@@ -14,3 +14,15 @@
     width: 60px;
     background-color: black;
 }
+/*Diff Logger CSS */
+.cssdiff_contianer {
+    position: fixed;
+    z-index: 9999999;
+    display: block;
+    border: 1px solid;
+    width: 450px;
+    line-height: 2;
+    padding: 15px;
+    background-color: white;
+}
+
