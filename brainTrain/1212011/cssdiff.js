@@ -13,14 +13,52 @@ $(document).ready( function() {
     // timerStep and timerMax are in seconds
     var timerStep = 30;
     var timerMax = 300;
+    var minuteDivisor = 0;
+    var secondDivisor = 0;
+    //initialize safe clicking to false, cause 
+    //this should be turned off by default
+    var safeClick = false;
 
-    //todo: convert minutes/seconds to something human readable
+    $('*').click(function() {
+        if(safeClick) {
+            return false;
+            console.log('ursafelol');
+        } else {
+            return true;
+            console.log('watchoutlolz');
+        }
+    });
+
+    //toggle the state of safe clicking on click
+    $('.cssdiff_safeclicks_button').click( function() {
+        safeClick = !safeClick;
+        if(safeClick == true) {
+            $('.cssdiff_safeclicks_light').html('&forall;');
+        } 
+        if(!safeClick == false) {
+            $('.cssdiff_safeclicks_light').html('o');
+        }
+    });
+
+    //converts minutes/seconds to something human readable
     for(i=timerStep; i <= timerMax; i += timerStep) {
         if(i==timerStep) {
             timerOptions += '<option value=' + timerStep + '>' + timerStep + ' seconds</option>';
+        } else if(i==timerStep + timerStep) {
+            minuteDivisor = i % (60 * 60);
+            secondDivisor = minuteDivisor % 60;
+            timerOptionsMinutes = Math.floor(minuteDivisor/60);
+            timerOptionsSeconds = Math.ceil(secondDivisor);
+                if(timerOptionsSeconds == 0) {
+                    timerOptionsSeconds = '00';
+                }
+            timerOptions += '<option value=' + i + '>' +  timerOptionsMinutes + ':' + timerOptionsSeconds + ' minute</option>';
         } else {
-            timerOptionsMinutes = (i / (timerStep * 2));
-            timerOptionsSeconds = 60 % (i / (timerStep * 2));
+
+            minuteDivisor = i % (60 * 60);
+            secondDivisor = minuteDivisor % 60;
+            timerOptionsMinutes = Math.floor(minuteDivisor/60);
+            timerOptionsSeconds = Math.ceil(secondDivisor);
                 if(timerOptionsSeconds == 0) {
                     timerOptionsSeconds = '00';
                 }
@@ -81,6 +119,8 @@ $(document).ready( function() {
                 jsonParentObject = 'parentHtmlTag: ' + parentHtmlTag + ' parentObjectAttrs: ' + parentObjectAttrs;
                 logglyJson = {};
                 logglyJson = {'Group': cssDiffGroup, 'Notes': cssDiffNotes, 'cssProperty': cssProperty, 'cssValue': cssValue, 'cssObject': jsonObject, 'cssParentObject': parentObjectAttrs }
+
+
                     $.ajax ({
                         type: 'POST',
                         url: testAjaxURL,
