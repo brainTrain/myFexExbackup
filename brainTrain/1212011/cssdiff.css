@@ -1,15 +1,9 @@
-.color_test {
-    display: block;
-    height: 20px;
-    width: 20px;
-    background-color: red;
-}
 
 .text_test a{
     color: black;
 }
 
-.size_test {
+.size_test, .color_test {
     height: 40px;
     width: 60px;
     background-color: black;
@@ -26,3 +20,22 @@
     background-color: white;
 }
 
+.cssdiff_safeclicks_button{
+    cursor: pointer;
+    color: black;
+}
+.cssdiff_safeclicks_button:hover {
+    color: gray;
+}
+.cssdiff_mute_button{
+    cursor: pointer;
+}
+.cssdiff_mute_button:hover {
+    color: gray;
+}
+.cssdiff_snapshot {
+    cursor: pointer;
+}
+.cssdiff_inputprompt {
+    cursor: pointer;
+}

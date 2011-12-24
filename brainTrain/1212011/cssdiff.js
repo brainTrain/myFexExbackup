@@ -18,25 +18,37 @@ $(document).ready( function() {
     //initialize safe clicking to false, cause 
     //this should be turned off by default
     var safeClick = false;
+    var isMute = false;
 
     $('*').click(function() {
         if(safeClick) {
-            return false;
-            console.log('ursafelol');
+            if(!$(this).hasClass('crizzledizzle')) {
+                return false;
+            } else {
+                return true;
+            }
         } else {
             return true;
-            console.log('watchoutlolz');
         }
     });
 
     //toggle the state of safe clicking on click
     $('.cssdiff_safeclicks_button').click( function() {
         safeClick = !safeClick;
-        if(safeClick == true) {
+        if(safeClick) {
             $('.cssdiff_safeclicks_light').html('&forall;');
-        } 
-        if(!safeClick == false) {
+        } else {
             $('.cssdiff_safeclicks_light').html('o');
+        }
+    });
+
+    //won't show any indication of logging to loggly (ie logging now light etc)
+    $('.cssdiff_mute_button').click( function() {
+        isMute = !isMute;
+        if(isMute) {
+            $('.cssdiff_mute_light').html('&forall;');
+        } else {
+            $('.cssdiff_mute_light').html('o');
         }
     });
 
