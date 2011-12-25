@@ -19,6 +19,7 @@ $(document).ready( function() {
     //this should be turned off by default
     var safeClick = false;
     var isMute = false;
+    var logJammin = false;
 
     $('*').click(function() {
         if(safeClick) {
@@ -95,57 +96,39 @@ $(document).ready( function() {
 
 
             $('*').watch(cssStyles, function(watchData, index) {
-                var htmlObject = this;
-                var htmlObjectParent = this.parentNode;
-                var cssValue = watchData.vals[index];
-                var cssProperty = watchData.props[index];
-                var htmlTag = htmlObject.localName;
-                var parentHtmlTag = htmlObjectParent.parentNode.localName;
-                
-                objectAttrs = '';
-                parentObjectAttrs = '';
-                //grabs all attributes of the object (so's you know which one it is) 
-                for(i=0; i < htmlObject.attributes.length; i++) {
-                    if(i==0) {
-                        objectAttrs += htmlObject.attributes[i].nodeName + ' : ' + htmlObject.attributes[i].nodeValue;
-                    } else {
-                        objectAttrs += ', ' + htmlObject.attributes[i].nodeName + ' : ' + htmlObject.attributes[i].nodeValue;
+                if(!$(this).hasClass('crizzledizzle')) {
+                    var htmlObject = this;
+                    var htmlObjectParent = this.parentNode;
+                    var cssValue = watchData.vals[index];
+                    var cssProperty = watchData.props[index];
+                    var htmlTag = htmlObject.localName;
+                    var parentHtmlTag = htmlObjectParent.parentNode.localName;
+                    
+                    objectAttrs = {};
+                    parentObjectAttrs = {};
+                    //grabs all attributes of the object (so's you know which one it is) 
+                    for(i=0; i < htmlObject.attributes.length; i++) {
+                        objectAttrs[htmlObject.attributes[i].nodeName] = htmlObject.attributes[i].nodeValue;
 
                     }
-
-                }
-                //if the html object has no attributes (it's an a or p tag, for example) find the attributes of its parent
-                //thought is this will be needed for CSS selectors such as .some_class a { //blahblah  }
-                if(htmlObject.attributes.length) {
-                    for(i=0; i < htmlObjectParent.attributes.length; i++) {
-                        if(i==0) {
-                            parentObjectAttrs += htmlObjectParent.attributes[i].nodeName + ' : ' + htmlObjectParent.attributes[i].nodeValue;
-                        } else {
-                            parentObjectAttrs += ', ' + htmlObjectParent.attributes[i].nodeName + ' : ' + htmlObjectParent.attributes[i].nodeValue;
+                    //if the html object has no attributes (it's an a or p tag, for example) find the attributes of its parent
+                    //thought is this will be needed for CSS selectors such as .some_class a { //blahblah  }
+                    if(htmlObject.attributes.length) {
+                        for(i=0; i < htmlObjectParent.attributes.length; i++) {
+                            parentObjectAttrs[i] = htmlObjectParent.attributes[i].nodeName + ' : ' + htmlObjectParent.attributes[i].nodeValue;
                         }
                     }
+                   
+                    //if( ){ }
+                    jsonObject = {};
+                    jsonParentObject = {};
+                    jsonObject = {'htmlTag': htmlTag, 'objectAttrs': objectAttrs};
+                    jsonParentObject = {'parentHtmlTag': parentHtmlTag, 'parentObjectAttrs': parentObjectAttrs};
+                    logglyJson = {};
+                    logglyJson = {'Group': cssDiffGroup, 'Notes': cssDiffNotes, 'cssProperty': cssProperty, 'cssValue': cssValue, 'cssObject': jsonObject, 'cssParentObject': parentObjectAttrs }
+
+                    logJammin();
                 }
-               
-                //if( ){ }
-                jsonObject = 'htmlTag: ' + htmlTag + ' objectAttrs: ' + objectAttrs;
-                jsonParentObject = 'parentHtmlTag: ' + parentHtmlTag + ' parentObjectAttrs: ' + parentObjectAttrs;
-                logglyJson = {};
-                logglyJson = {'Group': cssDiffGroup, 'Notes': cssDiffNotes, 'cssProperty': cssProperty, 'cssValue': cssValue, 'cssObject': jsonObject, 'cssParentObject': parentObjectAttrs }
-
-
-                    $.ajax ({
-                        type: 'POST',
-                        url: testAjaxURL,
-                        data: logglyJson,
-                        success: function(query) {
-                        },  
-                        error: function(jqXHR, txtStatus, error) {
-                            alert('hmmm something weird happened... you sure your input key is correct?');
-
-                        }   
-                    });
-                
-                console.log('json ', logglyJson);
             });
         }
 
@@ -153,7 +136,20 @@ $(document).ready( function() {
 });
 
 
+function logJammin() {
+    $.ajax ({
+        type: 'POST',
+        url: testAjaxURL,
+        data: logglyJson,
+        success: function(query) {
+        },  
+        error: function(jqXHR, txtStatus, error) {
+            //alert('hmmm something weird happened... you sure your input key is correct?');
+        }   
+    });
 
+    console.log('json ', logglyJson);
+}
 
 $.fn.watch = function(props, func, interval, id) {
     /// source (site or increase your awful level by over 5,000):
